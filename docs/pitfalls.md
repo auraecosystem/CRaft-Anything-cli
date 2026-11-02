@@ -529,6 +529,16 @@ three more times. Anything a project keeps must still work where the folder goes
 points to as well (`agent-session.jsonl`), tell "not here" apart from a failure by a typed signal
 (`Conversation::session_lost`), and never retry what can't succeed.
 
+**A session id saved for an agent that never resumed.** Codex's parser kept its `thread_id` as the
+session and the project saved it, but the adapter didn't resume, so the id was never passed back;
+the run read "a session is saved" as "the builder remembers", and every follow-up went to a new
+Codex run as one short line ("The person asks: … make the change") with no brief, no rules and no
+history. Asked to move a Godot prototype to C++, Codex rebuilt the prototype, passed the checks and
+said the change wasn't made. Decide what a builder knows from what it does
+(`continues_conversation`), not from a field being set, and test each adapter's follow-up with the
+real program across two runs. The fix had to carry the bad state too: projects from then keep such
+a thread, so craft.json now says whether a saved session holds the whole conversation.
+
 ## Agent tooling
 
 **Shell quoting breaks generated edits.** Heredocs carrying Python with quotes, `'''` or `\n` were
