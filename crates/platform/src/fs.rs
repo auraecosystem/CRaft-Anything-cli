@@ -26,11 +26,9 @@ fn write_impl(path: &Path, bytes: &[u8], private: bool) -> Result<(), ToolError>
     };
     std::fs::create_dir_all(&dir).map_err(|e| ToolError::io(dir.display(), e))?;
     let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "file".into());
-    let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-    let tmp = dir.join(format!(".{name}.tmp-{}-{n}", std::process::id()));
     let existing_perms = std::fs::metadata(path).ok().map(|m| m.permissions());
+    let (tmp, mut f) = create_temp(&dir, &name)?;
     let result = (|| {
-        let mut f = std::fs::File::create(&tmp).map_err(|e| ToolError::io(tmp.display(), e))?;
         if private {
             set_private(&tmp)?;
         } else if let Some(p) = existing_perms {
@@ -45,6 +43,22 @@ fn write_impl(path: &Path, bytes: &[u8], private: bool) -> Result<(), ToolError>
         let _ = std::fs::remove_file(&tmp);
     }
     result
+}
+
+/// Reserve a new temporary file before entering the cleanup scope. A collision belongs to
+/// another write, so it must never be truncated or removed by this call.
+fn create_temp(dir: &Path, name: &str) -> Result<(std::path::PathBuf, std::fs::File), ToolError> {
+    for _ in 0..64 {
+        let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let tmp = dir.join(format!(".{name}.tmp-{}-{n}", std::process::id()));
+        match std::fs::OpenOptions::new().write(true).create_new(true).open(&tmp) {
+            Ok(file) => return Ok((tmp, file)),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => return Err(ToolError::io(tmp.display(), error)),
+        }
+    }
+    let error = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "could not reserve an unused temporary file");
+    Err(ToolError::io(dir.display(), error))
 }
 
 /// On Windows a file another program has open for a moment (an antivirus scan, the search
