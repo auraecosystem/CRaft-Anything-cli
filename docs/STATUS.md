@@ -48,6 +48,7 @@ workspace clippy, layers, fmt and the secret scan of all history were clean. Chi
 | CLI | Every tool, `--deep` or `--clean-room` for one run (never saved), `rebuild` (including `--continue-in`, and `--resume` to carry on a stopped build), `mcp --inbox`, `ai`, `setup`, `doctor`, `report` | CLI integration tests |
 | SQLite database files (`db_sqlite_show`) | A rowid alias column (`INTEGER PRIMARY KEY`, including the table-constraint form) shows the rowid; `DESC`, non-`INTEGER` and composite keys keep their stored values | Hand-built fixtures; generated files compared with the official SQLite library |
 | SQLite WITHOUT ROWID tables | Read from the index b-tree, interior records and overflow included; rows in primary-key order, values in declaration order, `rowid` null | Hand-built fixtures; generated files compared with the official SQLite library |
+| Stand-in retained body budgets | Check the redacted text against each body and capture budget before retaining it or charging its bytes. | Four synthetic capture regressions passed in [full Linux CI](https://github.com/storytold/craft-anything/actions/runs/41687009280). Implementation `b9586247` passed workspace tests, formatting, strict Clippy, layers, locks, secrets, wasm-plugin checks and shared WASM compilation. |
 
 ### Builder retry policy
 

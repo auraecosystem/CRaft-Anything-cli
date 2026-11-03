@@ -981,8 +981,17 @@ fn make_sample(s: &Seen<'_>, opts: &BuildOptions, scrub: &mut Scrub, body_bytes:
             sample.body_left_out = Some(BodyLeftOut::HeldSecret);
             return sample;
         }
-        sample.text = Some(clean_text(t, sample.content_type.as_deref(), scrub));
-        *body_bytes = body_bytes.saturating_add(sample.text.as_ref().map_or(0, String::len));
+        let clean = clean_text(t, sample.content_type.as_deref(), scrub);
+        if clean.len() > opts.max_body_bytes {
+            sample.body_left_out = Some(BodyLeftOut::TooLarge);
+            return sample;
+        }
+        if body_bytes.saturating_add(clean.len()) > opts.max_total_body_bytes {
+            sample.body_left_out = Some(BodyLeftOut::FileLimit);
+            return sample;
+        }
+        *body_bytes = body_bytes.saturating_add(clean.len());
+        sample.text = Some(clean);
     } else {
         sample.base64 = binary.map(String::from);
         *body_bytes = body_bytes.saturating_add(size);
