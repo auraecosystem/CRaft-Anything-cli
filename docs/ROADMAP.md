@@ -97,17 +97,19 @@ Owner: maintainers · Status: todo
 Two reported failures, the Windows start-up crash (#414) and a builder resuming another's
 session (#471), are fixed on `main` and still broken for everyone on 0.3.0. This is the
 cheapest help we can give anyone, so nothing below should hold it up for long.
-- [ ] #490 has changes requested: a JSON object given to `--left` or `--right` becomes text, and
-      its new test passes without the fix. Merge it once that's fixed, or decline it; it doesn't
-      hold up the release. What it reports is 0.2.0's, fixed by #93 (`f6725c2`): on Windows the
+- [x] #490 merged (`549ae5e`) with the CLI fix the review asked for: a string-or-object input is
+      `any`, so a JSON object given to `--left` stays an object (tested both ways). What it reports
+      is 0.2.0's, fixed by #93 (`f6725c2`): on Windows the
       published 0.3.0 CLI with Claude Code 2.1.179 mounted 314 of 315 tools (the 315th is the
       approval tool, which Claude Code doesn't list but calls), and a real Deep build reached Ready
       with `core_action_approve` answering five prompts. The reporter was asked for `--version`.
       macOS is still owed (R5.7)
-- [ ] Cut the next release (`docs/releasing.md`). 0.3.0 lacks `0748ef1` (#414: Windows starts DX12
-      only, the crash behind "it won't open"), `1e8f661` (#471: a builder never continues another
-      builder's session) and `3357daf` (#430: Claude Code's message on stdin). Take #357 (R5.2) too
-      if it's ready
+- [ ] Cut the next release (`docs/releasing.md`). The version is 0.4.0 (#526) and `main` at
+      `fb7ac86` is green, but pushing `release` is refused: its ruleset blocks every update and
+      lists no one who may bypass it. A maintainer who can push it (or adds a bypass) goes next.
+      0.3.0 lacks `0748ef1` (#414: Windows starts DX12 only, the crash behind "it won't open"),
+      `1e8f661` (#471: a builder never continues another builder's session) and `3357daf` (#430:
+      Claude Code's message on stdin)
 - [ ] See that the launcher offers the new version: #74, #104 and #420 installed through it, and
       nothing in this repository says how it picks one
 - [ ] After it ships, close what it fixes: #166, #346, #420, #478. #74, #104 and #222 give no
@@ -155,11 +157,10 @@ only when it's green and a maintainer has fully reviewed it, code as well as wor
       fails on a Mac for that. `real_binary_end_to_end_if_present` fails there too, expecting
       `/bin/ls` to be Linux: both fixed (#357)
 - [ ] **decision** First-time contributors' CI: GitHub holds their runs for approval, so their PRs
-      show no `gate` run (#490 and #413 among them, and #413 holds up #455). Approve each push, or
+      show no `gate` run (#490 and #413 were among them). Approve each push, or
       change the repository's approval setting
-- [ ] Merge order the PR list doesn't show: #413 before #455; #193 before #482 and #486 (all change
-      the language list); #491 before #492 (same file). #433 and #468 look redundant with #421 and
-      #500: ask their authors
+- [ ] #193 changes the language list that #486 (merged) changed too: it needs a rebase. #468 looks
+      redundant with #500: ask its author
 - [ ] **decision** Wide PRs with no roadmap line: #416 (project goals, 34 files, cites an R2.11 that
       doesn't exist; that id stays free for it) and #503 (two asset providers and spending controls,
       37 files, cites the finished R1.4). Decide whether we want them before more is built on them
@@ -226,8 +227,8 @@ been run live.
       text, not on a model; Ollama's default context (4k) was too small for the old list alone
 - [ ] Run #417's case live (Ollama, `qwen2.5-coder:14b`, "a scientific calculator") before and
       after this: does it call `build_file_write` now? If it still doesn't, the model can't build
-- [ ] An assistant turn with no text sends `content: null` (`openai.rs`), which likely causes #403's
-      `invalid message content type: <nil>`: send an empty string
+- [x] An assistant turn with no text sends an empty string, not `content: null`, which Ollama
+      refused as `invalid message content type: <nil>` (#403, #536)
 - [x] Understand a tool call a model writes as JSON in its text (#417; implementation `dfe9a4db2dcb3e27edbd67311cbb4202584e7af6`). The fallback protocol reads
       only `Action:` and `Action Input:` lines, so anything else ends the turn with nothing done
 - [x] Preserve `length` and `content_filter` stop reasons on native tool-call streams; a parsed
