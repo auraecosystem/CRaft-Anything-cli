@@ -853,14 +853,7 @@ pub fn build(har: &Har, opts: &BuildOptions) -> StandIn {
         let sample = make_sample(s, opts, &mut scrub, &mut body_bytes);
         note_status(route, sample.status, sample.content_type.as_deref(), &mut scrub);
         // A request polled over and over gives the same answer many times; one is enough.
-        let repeat = route.samples.last().is_some_and(|p| {
-            p.path == sample.path
-                && p.query == sample.query
-                && p.request_key == sample.request_key
-                && p.status == sample.status
-                && p.text == sample.text
-                && p.base64 == sample.base64
-        });
+        let repeat = route.samples.last() == Some(&sample);
         if repeat {
             body_bytes = body_bytes.saturating_sub(sample.text.as_ref().map_or(0, String::len) + sample.base64.as_ref().map_or(0, String::len));
         } else {

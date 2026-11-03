@@ -650,6 +650,8 @@ Owner: open · Status: in progress
       it's there
 - [ ] `native_publisher_show` hashes the file minus the signature fields, not section by section;
       a file with unusual gaps between sections can read as different
+- [x] Keep stand-in response samples distinct when headers, content types or body-availability metadata differ.
+      — claimed: Afloat16, branch bugfix/r3.11-standin-sample-metadata-20261103b
 
 ### R3.12 Format parser correctness
 Owner: open · Status: in progress
