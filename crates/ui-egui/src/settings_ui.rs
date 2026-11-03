@@ -377,7 +377,10 @@ fn ai(app: &mut CraftApp, ui: &mut Ui) {
                     // Which model it uses, and the ones it can be set to (#123).
                     if live_catalog {
                         let options = app.backend_options.get(&b.name);
-                        let current = options.and_then(|o| o.cli_model.as_deref()).map(str::to_string).unwrap_or_else(|| tr("OpenCode default"));
+                        let current = options
+                            .and_then(|o| o.cli_model.as_deref())
+                            .map(str::to_string)
+                            .unwrap_or_else(|| trf("{agent} default", &[("agent", &craft_anything_ai::cli_agents::display_for(&b.model))]));
                         ui.label(trf("Model: {model}", &[("model", &current)]));
                         let thinking = options.and_then(|o| o.cli_thinking).map(|d| d.title().to_string()).unwrap_or_else(|| tr("Model default"));
                         ui.label(format!("{}: {thinking}", tr("Thinking depth")));

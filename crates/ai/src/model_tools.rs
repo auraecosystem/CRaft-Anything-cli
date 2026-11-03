@@ -14,8 +14,8 @@ pub fn specs() -> Vec<ToolSpec> {
         ToolSpec {
             id: "ai_models_list",
             title: "List an agent's models",
-            summary: "List the visible, enabled chat models and supported thinking depths of a configured OpenCode V2 backend, locally or on its SSH host. Uses that installation's configuration and credentials. Returns a total and a page (offset, limit: default 200, maximum 1000). OpenCode may start its background service and update its cache.",
-            beginner: "Shows which models this OpenCode can use.",
+            summary: "List the visible, enabled chat models and supported thinking depths of a configured agent with a model catalogue: OpenCode V2 (locally or on its SSH host, using that installation's configuration and credentials; it may start its background service and update its cache) or a local Codex (the list in its CODEX_HOME). Returns a total and a page (offset, limit: default 200, maximum 1000).",
+            beginner: "Shows which models this agent can use.",
             toolset: Toolset::Setup,
             effects,
             requires: Requires::Nothing,
@@ -25,7 +25,7 @@ pub fn specs() -> Vec<ToolSpec> {
         ToolSpec {
             id: "ai_model_set",
             title: "Choose an agent's model and thinking",
-            summary: "Save a configured OpenCode backend's model (provider/id) and optional thinking depth (low, medium, high, xhigh, max), validated against that instance's current model catalogue. Omit model and thinking to use OpenCode's default; omit thinking to use the selected model's default. Unsupported selections are refused.",
+            summary: "Save a configured catalogue agent's model and optional thinking depth (low, medium, high, xhigh, max). OpenCode's (provider/id) is validated against that instance's current model catalogue; Codex's against its cached list, where a model not listed yet is taken. Omit model and thinking to use the agent's default; omit thinking to use the selected model's default. Unsupported selections are refused.",
             beginner: "Chooses the model and how deeply it thinks.",
             toolset: Toolset::Setup,
             effects,
@@ -60,7 +60,7 @@ fn context(ctx: &Ctx<'_>, name: &str) -> Result<ModelContext, ToolError> {
     let config = AiConfig::from_table(&ctx.session.settings.ai)?;
     let backend = config.get(name).cloned().ok_or_else(|| ToolError::invalid(format!("No AI backend named {name:?}.")))?;
     if backend.config.kind != crate::BackendKind::AgentCli || !cli_agents::adapter_for(&backend.config.model).has_model_catalog() {
-        return Err(ToolError::invalid("Choose an OpenCode backend with a live model catalogue."));
+        return Err(ToolError::invalid("Choose an agent backend with a model catalogue (OpenCode or Codex)."));
     }
     Ok(ModelContext { backend, directory: ctx.session.project.as_ref().map(|p| p.root.clone()) })
 }

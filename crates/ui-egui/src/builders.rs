@@ -21,6 +21,7 @@ pub struct AgentModelPicker {
 /// The UI keeps the draft; discovery, validation and persistence live in the AI layer.
 pub fn agent_model_picker(ui: &mut Ui, picker: &mut AgentModelPicker) -> bool {
     let t = Tokens::get(ui.ctx());
+    let agent = craft_anything_ai::cli_agents::display_for(&picker.context.backend.config.model);
     let Some(result) = &picker.result else {
         ui.add(crate::widgets::Spinner::new().size(theme::CAPTION));
         ui.label(tr("Asking for its models…"));
@@ -34,9 +35,9 @@ pub fn agent_model_picker(ui: &mut Ui, picker: &mut AgentModelPicker) -> bool {
         }
     };
     if models.is_empty() {
-        ui.label(tr("OpenCode has no visible chat models. Connect a provider in OpenCode, then reload."));
+        ui.label(trf("{agent} lists no chat models here. Set it up (sign in, or connect a provider), then reload.", &[("agent", &agent)]));
     }
-    let default = tr("OpenCode default");
+    let default = trf("{agent} default", &[("agent", &agent)]);
     let selected = picker.model.as_deref().unwrap_or(&default);
     let response = egui::ComboBox::from_id_salt(("agent-model", &picker.context.backend.config.name))
         .icon(widgets::combo_icon)
@@ -54,11 +55,12 @@ pub fn agent_model_picker(ui: &mut Ui, picker: &mut AgentModelPicker) -> bool {
                 }
             }
         });
-    widgets::named(response.response, "OpenCode model");
+    widgets::named(response.response, &trf("{agent} model", &[("agent", &agent)]));
     let model = models.iter().find(|m| picker.model.as_ref() == Some(&m.id));
     let missing = picker.model.is_some() && model.is_none();
     if missing {
-        ui.label(RichText::new(tr("The saved model is no longer visible. Choose another model or the OpenCode default.")).color(t.warning));
+        let text = trf("The saved model is no longer visible. Choose another model or the {agent} default.", &[("agent", &agent)]);
+        ui.label(RichText::new(text).color(t.warning));
     }
     let depths = model.map(|m| m.thinking.as_slice()).unwrap_or_default();
     ui.label(tr("Thinking depth"));
