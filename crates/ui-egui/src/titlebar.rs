@@ -1,6 +1,7 @@
-//! The custom title bar (the native frame is off): app mark, what's open, Clean room / Deep, AI
-//! backend, Simple · Advanced, settings and the window buttons. Empty parts drag the window; the
-//! window edges resize it.
+//! The custom title bar: app mark, what's open, Clean room / Deep, AI backend, Simple · Advanced,
+//! settings and the window buttons. Empty parts drag the window. On Windows and Linux the native
+//! frame is off, so we draw the window buttons and the window edges resize it; macOS keeps its own
+//! frame and buttons, drawn over the bar's left end.
 
 use crate::i18n::tr;
 use crate::state::Screen;
@@ -10,10 +11,17 @@ use craft_anything_engine::Mode;
 use egui::viewport::ResizeDirection;
 use egui::{RichText, Ui, Vec2};
 
-/// Height of the custom title bar.
-pub const HEIGHT: f32 = 40.0;
+/// macOS draws its own window buttons, frame and resize edges (#20).
+pub const NATIVE_FRAME: bool = cfg!(target_os = "macos");
+/// Height of the custom title bar. On macOS it matches the system's title bar, so its window
+/// buttons sit centred in it.
+pub const HEIGHT: f32 = if NATIVE_FRAME { 32.0 } else { 40.0 };
+/// Height of the switches and buttons in the bar.
+const CONTROL: f32 = if NATIVE_FRAME { 26.0 } else { 30.0 };
 /// How close to the window edge the pointer must be to resize.
 const EDGE: f32 = 5.0;
+/// Room left of the app mark for macOS's window buttons.
+const NATIVE_BUTTONS_WIDTH: f32 = 84.0;
 
 fn maximized(ctx: &egui::Context) -> bool {
     ctx.input(|i| i.viewport().maximized.unwrap_or(false) || i.viewport().fullscreen.unwrap_or(false))
@@ -21,7 +29,7 @@ fn maximized(ctx: &egui::Context) -> bool {
 
 /// The window edge (or corner) under the pointer, when the window can be resized from there.
 pub fn edge_at(ctx: &egui::Context) -> Option<ResizeDirection> {
-    if maximized(ctx) {
+    if NATIVE_FRAME || maximized(ctx) {
         return None;
     }
     let pos = ctx.input(|i| i.pointer.hover_pos())?;
@@ -42,7 +50,7 @@ pub fn edge_at(ctx: &egui::Context) -> Option<ResizeDirection> {
 
 /// A 1 px edge around the window (the native frame is off), so it doesn't melt into the desktop.
 pub fn window_edge(ctx: &egui::Context) {
-    if maximized(ctx) {
+    if NATIVE_FRAME || maximized(ctx) {
         return;
     }
     let t = Tokens::get(ctx);
@@ -116,7 +124,9 @@ pub fn show(app: &mut CraftApp, ui: &mut Ui) {
     }
     ui.horizontal_centered(|ui| {
         ui.spacing_mut().item_spacing.x = 10.0;
-        ui.add_space(12.0);
+        // Full screen hides macOS's buttons, so the bar doesn't keep their room.
+        let fullscreen = ctx.input(|i| i.viewport().fullscreen.unwrap_or(false));
+        ui.add_space(if NATIVE_FRAME && !fullscreen { NATIVE_BUTTONS_WIDTH } else { 12.0 });
         if ui.add(crate::app_icon(22.0).sense(egui::Sense::click())).on_hover_text(tr("Home")).clicked() {
             app.state.screen = Screen::Home;
         }
@@ -139,17 +149,19 @@ pub fn show(app: &mut CraftApp, ui: &mut Ui) {
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             ui.spacing_mut().item_spacing.x = 0.0;
-            if window_button(ui, "x", "Close", true).clicked() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            if !NATIVE_FRAME {
+                if window_button(ui, "x", "Close", true).clicked() {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+                let max = maximized(&ctx);
+                if window_button(ui, if max { "layers" } else { "square" }, if max { "Restore" } else { "Maximise" }, false).clicked() {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
+                }
+                if window_button(ui, "minus", "Minimise", false).clicked() {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+                }
+                rule(ui);
             }
-            let max = maximized(&ctx);
-            if window_button(ui, if max { "layers" } else { "square" }, if max { "Restore" } else { "Maximise" }, false).clicked() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
-            }
-            if window_button(ui, "minus", "Minimise", false).clicked() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
-            }
-            rule(ui);
             ui.spacing_mut().item_spacing.x = 10.0;
             ui.add_space(4.0);
             if let Some((title, fraction, message)) = download {
@@ -172,12 +184,12 @@ pub fn show(app: &mut CraftApp, ui: &mut Ui) {
                 usage_pill(app, ui);
                 return;
             }
-            if icons::button(ui, "settings", 30.0, app.state.settings_open, "Settings").clicked() {
+            if icons::button(ui, "settings", CONTROL, app.state.settings_open, "Settings").clicked() {
                 app.state.settings_open = !app.state.settings_open;
             }
             rule(ui);
             let sel = usize::from(app.mode() == Mode::Experienced);
-            if let Some(i) = widgets::segmented(ui, &["Simple", "Advanced"], sel, 28.0) {
+            if let Some(i) = widgets::segmented(ui, &["Simple", "Advanced"], sel, CONTROL - 2.0) {
                 app.set_mode(if i == 0 { Mode::Beginner } else { Mode::Experienced });
             }
             rule(ui);
@@ -240,7 +252,7 @@ fn deep_toggle(app: &mut CraftApp, ui: &mut Ui) {
     let missing = app.ghidra_missing();
     let label = tr(if deep { "Deep" } else { "Clean room" });
     let g = widgets::label_galley(ui, &label, 12.0, t.text);
-    let size = Vec2::new(g.size().x + 64.0, 30.0);
+    let size = Vec2::new(g.size().x + 64.0, CONTROL);
     let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click());
     let fill = if resp.hovered() { t.hover } else { egui::Color32::TRANSPARENT };
     ui.painter().rect(rect, t.radius, fill, egui::Stroke::new(1.0, t.card_border), egui::StrokeKind::Inside);
@@ -278,7 +290,7 @@ fn backend_picker(app: &mut CraftApp, ui: &mut Ui) {
     let mut choice: Option<Option<String>> = None;
     let mut setup = false;
     ui.scope(|ui| {
-        ui.spacing_mut().interact_size.y = 30.0;
+        ui.spacing_mut().interact_size.y = CONTROL;
         egui::ComboBox::from_id_salt("backend-picker")
             .selected_text(theme::label_text(&current, 12.0).color(if app.state.backend.is_some() { t.text } else { t.text_dim }))
             .icon(widgets::combo_icon)

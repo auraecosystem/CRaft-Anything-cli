@@ -35,10 +35,15 @@ fn main() -> eframe::Result {
         .with_app_id("ai.storyteller.craft-anything")
         .with_inner_size([1360.0, 860.0])
         .with_min_inner_size([760.0, 520.0])
-        // Our own title bar draws the window controls, moves and resizes the window.
-        .with_decorations(false)
         .with_resizable(true)
         .with_drag_and_drop(true);
+    // Our own title bar draws the window controls, moves and resizes the window. macOS keeps its
+    // own buttons and frame instead, with the content reaching under a see-through title bar (#20).
+    let viewport = if cfg!(target_os = "macos") {
+        viewport.with_fullsize_content_view(true).with_titlebar_shown(false).with_title_shown(false)
+    } else {
+        viewport.with_decorations(false)
+    };
     // On macOS a window icon replaces the Dock icon, and the bundle's own icon is the one padded to
     // Apple's icon grid (the full tile looked bigger than other apps', #102). An empty icon keeps
     // the bundle's; no icon at all would bring eframe's own.
