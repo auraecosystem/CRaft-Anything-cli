@@ -163,10 +163,10 @@ OpenAI-compatible servers are available for questions and analysis (Settings →
 Every tool is also a CLI subcommand and an MCP tool, so an agent can study a target or run a
 whole rebuild without the app:
 
-```sh
+```bash
 craft-anything-cli commands                                   # every tool, by toolset
 craft-anything-cli mcp                                        # serve them to any MCP client
-craft-anything-cli rebuild https://example.com "Recreate this website"
+craft-anything-cli rebuild https://you.com "Recreate this website"
 ```
 
 Results are evidence records with their confidence, coverage and limitations; big ones come back
@@ -187,14 +187,14 @@ the browser as WebAssembly. The full list is in [docs/tools.md](docs/tools.md).
 Requires Rust **1.97 or newer** (a dependency needs it; `rustup update`). On Debian or Ubuntu,
 the desktop app also needs:
 
-```sh
+```ps1
 sudo apt-get install libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libgtk-3-dev
 ```
 
 Then:
 
-```sh
-git clone https://github.com/storytold/craft-anything && cd craft-anything
+```bash
+git clone https://github.com/auraecosystem/craft-anything-cli && cd craft-anything
 cargo run --release -p craft-anything                # the desktop app
 cargo install --path apps/craft-anything-cli         # the CLI, as `craft-anything-cli`
 craft-anything-cli doctor                            # checks the install, coding agents and engines
@@ -203,7 +203,7 @@ craft-anything-cli doctor                            # checks the install, codin
 Building needs a coding agent signed in on your computer (see [AI](#ai)); `doctor` says what's
 missing. Rebuild from the command line (questions are asked in the terminal):
 
-```sh
+```pwsh
 craft-anything-cli rebuild https://example.com "Recreate this website"
 craft-anything-cli rebuild - "A snake game in Rust" --rounds 1
 craft-anything-cli rebuild https://example.com "Make the header blue" --continue-in "<project folder>"
@@ -276,7 +276,13 @@ A browser download of the zip can stop with "Apple could not verify craft-anythi
 program can't carry its notarization with it, so macOS has to look it up online). A download from
 the terminal isn't checked this way, so use this instead:
 
-```sh
+```bash
+ver=0.2.0   # change this to the version you want
+curl -fLO "https://github.com/storytold/craft-anything/releases/download/v$ver/craft-anything-cli-$ver-macos-universal.zip"
+ditto -x -k "craft-anything-cli-$ver-macos-universal.zip" .
+mkdir -p ~/.local/bin
+mv "craft-anything-cli-$ver-macos-universal/craft-anything-cli" ~/.local/bin/
+~/.local/bin/craft-anything-cli --version
 ver=0.2.0   # change this to the version you want
 curl -fLO "https://github.com/storytold/craft-anything/releases/download/v$ver/craft-anything-cli-$ver-macos-universal.zip"
 ditto -x -k "craft-anything-cli-$ver-macos-universal.zip" .
