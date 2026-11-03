@@ -79,6 +79,12 @@ still searched PATH, `~/.local/bin` and `/opt/ghidra`, so two Deep-mode tests go
 on a machine that had it. `testing::session()` now sets `engines.only_configured`, so it finds only
 the engines its settings or store name.
 
+**A smoke test raced its supplied discovery result.** Opening the NeedBuilder dialog started
+real background discovery, but the test then supplied its own detected-agent fixture. A late
+scan result could replace that fixture, making CI depend on installed programs and thread timing
+(#673). When a test supplies discovery results, mark discovery as in progress before opening
+the dialog and explicitly complete that simulated scan; don't also start a real machine scan.
+
 **A failing crate hid the next crate's tests.** `cargo test -p a -p b` stopped after a failure in
 `a`, so `b`'s tests never ran; the rerun was filtered to the failing test, and a broken engine id
 reached `main`. Run with `--no-fail-fast`, and after a fix rerun the whole crates, not a filter.

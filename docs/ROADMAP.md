@@ -166,6 +166,9 @@ only when it's green and a maintainer has fully reviewed it, code as well as wor
 - [ ] **decision** Replies don't reach people who file through the ticket relay (each such ticket
       says so), yet the bot asks them for details. About half the open issues came that way. Get
       replies back to them, or stop asking
+- [x] Isolate the NeedBuilder smoke test from real machine discovery so a background scan
+      cannot overwrite its supplied agent fixture (#673 CI)
+      — claimed: Afloat16, branch test/r5.2-isolate-builder-smoke-detection-20261103
 - [ ] `a_helper_is_judged_by_whether_it_runs` (ai crate) sometimes fails when several crates'
       tests run at once and passes alone: it writes a script and runs it straight away, which a
       busy machine can refuse while another test's child still holds the file open

@@ -1984,6 +1984,8 @@ fn with_nothing_to_build_with_start_offers_what_was_found_instead_of_a_dead_end(
         let mut a = demo::app(demo::engine(Mode::Beginner, true));
         a.backends.clear();
         a.detected = Some(Vec::new());
+        // Supply discovery below without scanning the real test machine.
+        a.detecting = true;
         a
     });
     h.run_steps(3);
@@ -1992,7 +1994,7 @@ fn with_nothing_to_build_with_start_offers_what_was_found_instead_of_a_dead_end(
     h.state_mut().start_make();
     h.run_steps(2);
     assert_eq!(h.state().state.modal, Some(Modal::NeedBuilder { start: true }));
-    // Found on this computer meanwhile (detection runs when the dialog opens).
+    // Complete the simulated discovery with the available-agent fixture.
     h.state_mut().detecting = false;
     h.state_mut().detected = Some(demo::detected());
     h.run_steps(2);
