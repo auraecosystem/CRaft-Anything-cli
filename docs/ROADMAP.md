@@ -571,9 +571,10 @@ Gaps found while using the app for real projects.
       bounded cleanup change has been checked with Linux stand-ins, not this Windows incident
 - [ ] Find why a site capture lost its browser ("the WebSocket is closed", 419 ms into
       `web_site_capture` for a second page, seen once; the same capture passed 41 s earlier)
-- [ ] Claude Code's own extras: its Ultracode switch (a setting, not an effort level; the
-      effort environment variable we use can't turn it on) and its model names beyond the list
-      (`opusplan`, `[1m]` variants) offered in Settings → AI; `ai model` already takes any name
+- [ ] Claude Code's Ultracode switch (a setting, not an effort level; the effort environment
+      variable we use can't turn it on)
+- [x] A model the list doesn't offer (`opusplan`, `[1m]` variants, one another harness serves) can
+      be typed in beside the model list in Settings → AI, as `ai model` already allowed (#470)
 - [x] The preview server answers only requests addressed to this computer (a Host and Origin
       check against DNS rebinding), streams large files instead of reading them into memory,
       sends no body for HEAD on a missing file, and caps open connections and the time a
