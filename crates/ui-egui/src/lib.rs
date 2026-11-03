@@ -452,6 +452,14 @@ pub struct CraftApp {
     pub drafts: std::collections::HashMap<u64, project::Draft>,
     /// A picture still being pasted into the open project's prompt box (`paste_pictures`).
     pub pending_paste: Option<project::PendingPaste>,
+    /// Picture-size checks still running for each project's prompt box, and for Make. Send and
+    /// Make Start wait only for their own destination.
+    pending_attach_checks: std::collections::BTreeMap<PathBuf, usize>,
+    pending_make_checks: usize,
+    /// Projects whose Send is waiting for their own picture checks to finish.
+    send_after_checks: std::collections::BTreeSet<PathBuf>,
+    /// The Make draft Start was pressed for, while its picture checks finish.
+    start_after_pictures: Option<state::MakeDraft>,
     /// Each project's building time and AI use, every build together (read from its usage.json).
     pub usage: std::collections::HashMap<PathBuf, usage::ProjectClock>,
     /// All AI use since the app opened: builds and chat.
@@ -551,6 +559,10 @@ impl CraftApp {
             runs: craft_anything_ai::rebuild::RunSet::new(craft_anything_engine::settings::BuildSettings::default().parallel),
             drafts: Default::default(),
             pending_paste: None,
+            pending_attach_checks: Default::default(),
+            pending_make_checks: 0,
+            send_after_checks: Default::default(),
+            start_after_pictures: None,
             usage: Default::default(),
             session_usage: Default::default(),
             workspace: None,
