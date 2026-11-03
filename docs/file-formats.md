@@ -7,9 +7,9 @@ version up to the current one, then turn the document into Rust types. The step 
 
 | File | Owner | Current version | Older files | Newer files |
 |---|---|---|---|---|
-| `<project>/craft.json` | `engine::workspace` (`Manifest`) | `MANIFEST_VERSION` = 2 (`version`; missing = 0) | brought forward, saved as current | opened read-only: saving is refused |
+| `<project>/craft.json` | `engine::workspace` (`Manifest`) | `MANIFEST_VERSION` = 3 (`version`; missing = 0) | brought forward, saved as current | opened read-only: saving is refused |
 | `<project>/inbox/build-progress.json` | `engine::workspace::progress` (`BuildProgress`; written only by the rebuild run) | `BUILD_PROGRESS_VERSION` = 1 (`version`; missing = 0) | brought forward; an absent file starts with no counted turns | the build stops and the record is left unchanged |
-| `config.toml` (`settings::config_dir()`) | `engine::settings` (`Settings`) | `SETTINGS_VERSION` = 2 (`version`; missing = 0; 2 moved `[engines.ghidra] enabled` to `deep_mode`) | brought forward | loaded, never saved over |
+| `config.toml` (`settings::config_dir()`) | `engine::settings` (`Settings`) | `SETTINGS_VERSION` = 4 (`version`; missing = 0; 2 moved `[engines.ghidra] enabled` to `deep_mode`; 3 added more project folders and the answer about a picked folder's files; 4 added `[assets] model_3d`) | brought forward | loaded, never saved over |
 | `<name>.cany/project.toml` | `engine::project` (`ProjectMeta`) | `FORMAT_VERSION` = 1 (`format_version`, required) | brought forward | refused, with "update Craft Anything" |
 | `<project>/transcript.json` | `ai::context` (the API builder's conversation) | `TRANSCRIPT_VERSION` = 1 (`{version, history}`) | read as before | not resumed; a fresh build replaces it |
 | `<project>/app/mechanics.json` | `engine::mechanics` (written by the builder, read by `MechanicsCheck`) | `MECHANICS_VERSION` = 1 (`version`; missing = 1) | — | the check fails and says so |
@@ -25,7 +25,14 @@ copies in the project's `attachments/`; one without pictures stays the plain str
 versions wrote.
 
 Other JSON in a project (`assets.json`, `inbox/` except `inbox/build-progress.json`, `checks/`,
-evidence records) has no version yet; add one the first time its shape changes.
+evidence records) has no version yet; add one the first time its shape changes. `assets.lock` is an
+empty file that only carries the operating system's lock on the project's spending; it holds no data.
+
+`craft.json` version 3 adds an optional `asset_providers` list. Missing or null keeps the legacy
+behavior: all providers are allowed when `generate_assets` is true. An explicit list allows only
+those provider ids, and an empty list allows none. The master switch still needs to be on.
+Budget and provider choices are person-owned fields: builder saves preserve the values on disk,
+and duplicating a project retains its choices.
 
 ## Stand-in cached responses
 

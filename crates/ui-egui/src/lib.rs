@@ -199,6 +199,8 @@ pub enum Done {
     },
     /// Which asset providers have a key set up (provider id → stored).
     AssetKeys(std::collections::BTreeMap<String, bool>),
+    /// A project's asset settings were saved and reloaded on a worker.
+    AssetSettings(Result<Box<craft_anything_engine::workspace::Workspace>, ToolError>),
     Wrote {
         what: String,
         path: Option<PathBuf>,
@@ -426,10 +428,14 @@ pub struct CraftApp {
     /// Which asset providers have a key set up, by provider id (`None` until checked; the keys
     /// themselves never come into the app).
     pub asset_keys: Option<std::collections::BTreeMap<String, bool>>,
+    /// The asset providers the app lists: the engine session's registry (where a fork registers its
+    /// own), read once at startup so screens never lock the session to list them.
+    pub asset_providers: craft_anything_engines::assets::AssetProviders,
     /// What the open project's files say (built result, pictures, assets, open questions), read
     /// on a worker.
     pub facts: project::Facts,
     facts_reader: project::FactsReader,
+    asset_change_job: Option<u64>,
     /// Getting a game engine: downloads, installers opened, a project waiting to start.
     pub engine_flow: engine_ui::Flow,
     /// Getting Ghidra for Deep mode.
@@ -463,11 +469,14 @@ pub struct CraftApp {
 }
 
 impl CraftApp {
-    /// Initialize UI state from the shared engine's saved settings, waiting rather than substituting defaults.
+    /// Initialize UI state from the shared engine's saved settings, waiting rather than substituting defaults, before any background refreshes start.
     pub fn new(engine: Arc<Engine>, hub: Arc<AiHub>) -> Self {
         // Wait for the engine if it's busy: defaults here would show Clean room and no AI, and the
         // next settings change would save them over the person's own.
-        let settings = engine.session().settings.clone();
+        let (settings, asset_providers) = {
+            let session = engine.session();
+            (session.settings.clone(), session.ext.get::<craft_anything_engines::assets::AssetProviders>().map(|p| p.as_ref().clone()).unwrap_or_default())
+        };
         i18n::set_language(&settings.language);
         CraftApp {
             engine,
@@ -510,8 +519,10 @@ impl CraftApp {
             kinds: craft_anything_ai::rebuild::KindRegistry::built_in(),
             game_engines: None,
             asset_keys: None,
+            asset_providers,
             facts: Default::default(),
             facts_reader: Default::default(),
+            asset_change_job: None,
             engine_flow: Default::default(),
             ghidra: Default::default(),
             toast_at: Vec::new(),
@@ -844,6 +855,10 @@ impl CraftApp {
     /// Run a tool for a button on a worker (play, preview, open a folder…); the result comes back
     /// as `Done::Acted` and is shown by `acted`. A click is the person's consent.
     pub fn act(&mut self, tool: &'static str, params: Value, title: String) {
+        if matches!(tool, "project_assets_budget" | "project_assets_allow") {
+            self.change_assets(tool, params, title, None);
+            return;
+        }
         let engine = self.engine.clone();
         self.jobs.spawn(title, false, move |j| {
             let progress = j.reporter();
@@ -853,6 +868,7 @@ impl CraftApp {
         });
     }
 
+    /// Apply a button action's result to the relevant UI state and report success or failure.
     fn acted(&mut self, tool: &str, result: Result<Value, ToolError>) {
         match (tool, result) {
             ("project_preview", Ok(v)) => {
@@ -864,7 +880,6 @@ impl CraftApp {
             ("project_play", Ok(v)) if !v["closed_at_once"].is_null() => self.toast(pins::quit_at_once(&v), true),
             ("project_play", Ok(_)) => self.toast(tr("Starting… it opens in its own window."), false),
             ("project_play", Err(e)) => self.toast(format!("{} {}", tr("Couldn't start it."), e.for_people()), true),
-            ("project_assets_budget" | "project_assets_allow", Ok(_)) => self.assets_changed(),
             ("rebuild_question_ask", r) => self.question_done(r),
             ("project_build_finish", Ok(v)) => {
                 if let Some(ws) = self.workspace.as_mut().filter(|w| v["project"].as_str().is_some_and(|p| w.root == std::path::Path::new(p))) {
@@ -1267,7 +1282,7 @@ impl CraftApp {
 
     // ---- results ----------------------------------------------------------------------------
 
-    /// Apply a completed background job, reporting failures and accepting picker results only for matching requests.
+    /// Apply a completed background job: release its marker, report failures and restore controls, and accept picker results only for matching requests.
     fn handle_done(&mut self, done: jobs::Finished<Done>) {
         let job = done.job;
         if self.saving == Some(job) {
@@ -1282,6 +1297,9 @@ impl CraftApp {
             Err(e) => {
                 self.detecting = false;
                 self.facts_read(job, None);
+                if self.asset_change_job == Some(job) {
+                    self.asset_change_job = None;
+                }
                 // A failed or cancelled engine download frees the button to try again.
                 if self.engine_flow.job.is_some_and(|(_, id)| id == job) {
                     self.engine_flow.job = None;
@@ -1301,6 +1319,7 @@ impl CraftApp {
                 self.refresh_pins();
             }
             Done::Facts(f) => self.facts_read(job, Some(f)),
+            Done::AssetSettings(result) => self.assets_changed(result),
             Done::PicturesAdded(added) => self.pictures_added(added),
             Done::Created { ws, request, backend, pictures } => self.created(*ws, request, backend, pictures),
             Done::Thumb { path, image } => self.thumb_ready(path, image),

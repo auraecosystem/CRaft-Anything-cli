@@ -305,14 +305,12 @@ fn engines(app: &mut CraftApp, ui: &mut Ui) {
     }
 }
 
-/// Draw AI settings and model pickers, preserving drafts during contention and invalidating confirmed context changes.
+/// Draw AI settings and model pickers, preserving drafts during contention and invalidating confirmed context changes, followed by the independent asset-provider credential controls.
 fn ai(app: &mut CraftApp, ui: &mut Ui) {
     if app.agent_model_picker.as_ref().is_some_and(|p| app.hub.model_context(&p.context.backend.config.name).is_ok_and(|current| current != p.context)) {
         app.agent_model_picker = None;
     }
     let t = Tokens::get(ui.ctx());
-    crate::engine_ui::assets_settings(app, ui);
-    ui.add_space(16.0);
     widgets::caption(ui, "Your brains");
     ui.add_space(4.0);
     if app.backends.is_empty() {
@@ -599,6 +597,8 @@ fn ai(app: &mut CraftApp, ui: &mut Ui) {
         ui.add_space(6.0);
     }
     server_form(app, ui);
+    ui.add_space(16.0);
+    crate::engine_ui::assets_settings(app, ui);
 }
 
 /// An AI that "Look for AI" can't find: a server on another computer or a hosted service, added by
@@ -640,6 +640,7 @@ fn number<T: egui::emath::Numeric>(ui: &mut Ui, value: &mut T, range: std::ops::
     ui.add(egui::DragValue::new(value).range(range).prefix(prefix).suffix(suffix)).changed()
 }
 
+/// Edit build limits and asset defaults, persisting changes to budgets and visual-model selections.
 fn builds(app: &mut CraftApp, ui: &mut Ui) {
     let mut changed = false;
     let b = &mut app.settings.build;
@@ -666,26 +667,46 @@ fn builds(app: &mut CraftApp, ui: &mut Ui) {
         changed |= number(ui, &mut b.parallel, 1..=8, "", "");
     });
     ui.add_space(8.0);
-    widgets::caption(ui, "Generated art (games)");
+    widgets::caption(ui, "Generated assets");
     let a = &mut app.settings.assets;
     row(
         ui,
         "Budget for a new project",
-        "What a new game may spend on generated pictures and 3D models before you're asked. Each project keeps its own.",
+        "What a new project may spend on generated pictures, 3D models and audio before you're asked. Each project keeps its own.",
         |ui| {
-            changed |= number(ui, &mut a.budget_usd, 0.0..=10_000.0, "$", "");
+            changed |= number(ui, &mut a.budget_usd, 0.0..=craft_anything_engine::workspace::MAX_ASSET_BUDGET_USD, "$", "");
         },
     );
     let table = craft_anything_engines::assets::Catalogue::built_in();
     row(ui, "Picture model", "What pictures and textures are made with.", |ui| {
-        let current = table.image_model(a.image_model.as_deref()).or_else(|_| table.image_model(None)).map(|m| m.name.clone()).unwrap_or_default();
+        let current = table
+            .image_model(a.image_model.as_deref())
+            .map(|m| m.name.clone())
+            .unwrap_or_else(|_| trf("Unavailable model: {id}", &[("id", a.image_model.as_deref().unwrap_or_default())]));
         egui::ComboBox::from_id_salt("image-model").icon(widgets::combo_icon).selected_text(current).show_ui(ui, |ui| {
             for m in table.images() {
                 let price = crate::usage::asset_cost_words(m.cost(craft_anything_engines::assets::Shape::Square));
-                let label = format!("{} · {} {}", m.name, price, tr("a picture"));
+                let label = format!("{} · {} · {} {}", m.name, m.provider, price, tr("a picture"));
                 let on = a.image_model.as_deref() == Some(m.id.as_str());
                 if ui.selectable_label(on, label).on_hover_text(&m.licence).clicked() && !on {
                     a.image_model = Some(m.id.clone());
+                    changed = true;
+                }
+            }
+        });
+    });
+    row(ui, "3D model generator", "What pictures are turned into 3D models with.", |ui| {
+        let current = table
+            .model_3d(a.model_3d.as_deref())
+            .map(|m| m.name.clone())
+            .unwrap_or_else(|_| trf("Unavailable model: {id}", &[("id", a.model_3d.as_deref().unwrap_or_default())]));
+        egui::ComboBox::from_id_salt("model-3d").icon(widgets::combo_icon).selected_text(current).show_ui(ui, |ui| {
+            for m in table.models_3d() {
+                let price = crate::usage::asset_cost_words(m.cost(true));
+                let label = format!("{} · {} · {}", m.name, m.provider, price);
+                let on = a.model_3d.as_deref() == Some(m.id.as_str());
+                if ui.selectable_label(on, label).on_hover_text(&m.licence).clicked() && !on {
+                    a.model_3d = Some(m.id.clone());
                     changed = true;
                 }
             }

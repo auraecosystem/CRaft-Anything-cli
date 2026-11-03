@@ -1386,3 +1386,33 @@ your files there are the app, edited in place	그 파일이 곧 앱이며 그 �
 … {} older	… 이전 항목 {}개
 ← Back	← 뒤로
 ↑↓ to move · Enter to run · Esc to close	↑↓ 이동 · Enter 실행 · Esc 닫기
+Unavailable model: {id}	사용할 수 없는 모델: {id}
+Generate speech	음성 생성
+Generate a sound effect	효과음 생성
+Generate music	음악 생성
+Generate pictures, models and audio	그림, 모델, 오디오 생성
+Needs an asset provider key. Until then the game is built without generated assets.	에셋 제공자 키가 필요합니다. 그전까지는 생성한 에셋 없이 게임을 빌드합니다.
+Paid from your provider accounts: estimates of {model} a 3D model and {picture} a picture. Audio costs depend on length. Off, the game is built without generated assets.	제공자 계정에서 결제됩니다. 예상 비용은 3D 모델 하나에 {model}, 그림 하나에 {picture}입니다. 오디오 비용은 길이에 따라 다릅니다. 끄면 생성한 에셋 없이 게임을 빌드합니다.
+Add a provider key	제공자 키 추가
+Your asset provider keys	에셋 제공자 키
+Use fal.ai, Scenario or ElevenLabs for generated assets.	생성 에셋에 fal.ai, Scenario 또는 ElevenLabs를 사용합니다.
+Generate original pictures and models, speech, sound effects and music with your own provider accounts. Estimated visual costs: {model} a model and {picture} a picture. Each project has a {budget} budget. Keys use the system keychain when available, otherwise a private local key file. Choose picture and 3D providers in Settings → Builds.	내 제공자 계정으로 오리지널 그림과 모델, 음성, 효과음, 음악을 생성합니다. 예상 시각 에셋 비용은 모델 하나에 {model}, 그림 하나에 {picture}입니다. 프로젝트마다 예산은 {budget}입니다. 키는 가능하면 시스템 키체인에, 아니면 비공개 로컬 키 파일에 보관합니다. 그림과 3D 제공자는 설정 → 빌드에서 고르세요.
+Pictures and 3D models from fal.ai or Scenario; speech, sound effects and music from ElevenLabs. Estimated {model} per model, with a {budget} budget per project. Choose visual models in Settings → Builds.	그림과 3D 모델은 fal.ai 또는 Scenario에서, 음성·효과음·음악은 ElevenLabs에서 만듭니다. 모델당 예상 {model}, 프로젝트당 예산 {budget}입니다. 시각 모델은 설정 → 빌드에서 고르세요.
+3D model generator	3D 모델 생성기
+What pictures are turned into 3D models with.	그림을 3D 모델로 바꾸는 데 씁니다.
+What a new project may spend on generated pictures, 3D models and audio before you're asked. Each project keeps its own.	새 프로젝트가 확인을 요청하기 전에 생성 그림, 3D 모델, 오디오에 쓸 수 있는 금액입니다. 프로젝트마다 따로 보관합니다.
+API secret	API 시크릿
+{name} API secret	{name} API 시크릿
+Paste your {name} API secret	{name} API 시크릿 붙여넣기
+Save asset settings	에셋 설정 저장
+Key needed	키 필요
+Off. Turning this on uses the providers chosen below.	꺼짐. 켜면 아래에서 고른 제공자를 사용합니다.
+Manage provider keys	제공자 키 관리
+Assets: {n} · estimated spent ${spent}	에셋: {n}개 · 예상 지출 ${spent}
+Budget ${budget} · remaining ${remaining}	예산 ${budget} · 남은 금액 ${remaining}
+Shared asset budget (USD)	공유 에셋 예산 (USD)
+Asset budget in USD	에셋 예산 (USD)
+Save budget	예산 저장
+Saving asset settings…	에셋 설정 저장 중…
+Enter an amount from 0 to {max} USD.	0에서 {max} USD 사이의 금액을 입력하세요.
+Asset spending is unavailable. Repair assets.json before generating.	에셋 지출 기록을 읽을 수 없습니다. 생성하기 전에 assets.json을 고치세요.

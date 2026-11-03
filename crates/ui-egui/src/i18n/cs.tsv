@@ -1386,3 +1386,33 @@ your files there are the app, edited in place	vaše soubory ve složce jsou apli
 … {} older	… starší: {}
 ← Back	← Zpět
 ↑↓ to move · Enter to run · Esc to close	↑↓ pro pohyb · Enter pro spuštění · Esc pro zavření
+Unavailable model: {id}	Nedostupný model: {id}
+Generate speech	Vygenerovat řeč
+Generate a sound effect	Vygenerovat zvukový efekt
+Generate music	Vygenerovat hudbu
+Generate pictures, models and audio	Generovat obrázky, modely a zvuk
+Needs an asset provider key. Until then the game is built without generated assets.	Vyžaduje klíč poskytovatele podkladů. Do té doby se hra sestaví bez generovaných podkladů.
+Paid from your provider accounts: estimates of {model} a 3D model and {picture} a picture. Audio costs depend on length. Off, the game is built without generated assets.	Platí se z vašich účtů u poskytovatelů: odhadem {model} za 3D model a {picture} za obrázek. Cena zvuku závisí na délce. Když je vypnuto, hra se sestaví bez generovaných podkladů.
+Add a provider key	Přidat klíč poskytovatele
+Your asset provider keys	Vaše klíče poskytovatelů podkladů
+Use fal.ai, Scenario or ElevenLabs for generated assets.	Pro generované podklady použijte fal.ai, Scenario nebo ElevenLabs.
+Generate original pictures and models, speech, sound effects and music with your own provider accounts. Estimated visual costs: {model} a model and {picture} a picture. Each project has a {budget} budget. Keys use the system keychain when available, otherwise a private local key file. Choose picture and 3D providers in Settings → Builds.	Generujte původní obrázky a modely, řeč, zvukové efekty a hudbu pomocí vlastních účtů u poskytovatelů. Odhadované náklady na vizuální podklady: {model} za model a {picture} za obrázek. Každý projekt má rozpočet {budget}. Klíče se ukládají do systémové klíčenky, pokud je k dispozici, jinak do soukromého místního souboru s klíči. Poskytovatele obrázků a 3D modelů vyberte v Nastavení → Sestavení.
+Pictures and 3D models from fal.ai or Scenario; speech, sound effects and music from ElevenLabs. Estimated {model} per model, with a {budget} budget per project. Choose visual models in Settings → Builds.	Obrázky a 3D modely z fal.ai nebo Scenario; řeč, zvukové efekty a hudba z ElevenLabs. Odhadem {model} za model a rozpočet {budget} na projekt. Vizuální modely vyberte v Nastavení → Sestavení.
+3D model generator	Generátor 3D modelů
+What pictures are turned into 3D models with.	Čím se obrázky převádějí na 3D modely.
+What a new project may spend on generated pictures, 3D models and audio before you're asked. Each project keeps its own.	Kolik může nový projekt utratit za generované obrázky, 3D modely a zvuk, než se vás zeptá. Každý projekt si drží vlastní rozpočet.
+API secret	Tajný klíč API
+{name} API secret	Tajný klíč API {name}
+Paste your {name} API secret	Vložte tajný klíč API {name}
+Save asset settings	Uložit nastavení podkladů
+Key needed	Chybí klíč
+Off. Turning this on uses the providers chosen below.	Vypnuto. Po zapnutí se použijí poskytovatelé vybraní níže.
+Manage provider keys	Spravovat klíče poskytovatelů
+Assets: {n} · estimated spent ${spent}	Podklady: {n} · odhadem utraceno ${spent}
+Budget ${budget} · remaining ${remaining}	Rozpočet ${budget} · zbývá ${remaining}
+Shared asset budget (USD)	Sdílený rozpočet podkladů (USD)
+Asset budget in USD	Rozpočet podkladů v USD
+Save budget	Uložit rozpočet
+Saving asset settings…	Ukládání nastavení podkladů…
+Enter an amount from 0 to {max} USD.	Zadejte částku od 0 do {max} USD.
+Asset spending is unavailable. Repair assets.json before generating.	Výdaje za podklady nejsou k dispozici. Před generováním opravte assets.json.

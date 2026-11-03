@@ -1386,3 +1386,33 @@ your files there are the app, edited in place	deine Dateien dort sind die App, d
 … {} older	… {} ältere
 ← Back	← Zurück
 ↑↓ to move · Enter to run · Esc to close	↑↓ zum Bewegen · Enter zum Ausführen · Esc zum Schließen
+Unavailable model: {id}	Nicht verfügbares Modell: {id}
+Generate speech	Sprache erzeugen
+Generate a sound effect	Einen Soundeffekt erzeugen
+Generate music	Musik erzeugen
+Generate pictures, models and audio	Bilder, Modelle und Audio erzeugen
+Needs an asset provider key. Until then the game is built without generated assets.	Braucht einen Schlüssel für einen Asset-Anbieter. Bis dahin wird das Spiel ohne generierte Assets gebaut.
+Paid from your provider accounts: estimates of {model} a 3D model and {picture} a picture. Audio costs depend on length. Off, the game is built without generated assets.	Bezahlt über deine Anbieterkonten: geschätzt {model} pro 3D-Modell und {picture} pro Bild. Audiokosten hängen von der Länge ab. Ausgeschaltet wird das Spiel ohne generierte Assets gebaut.
+Add a provider key	Anbieterschlüssel hinzufügen
+Your asset provider keys	Deine Schlüssel für Asset-Anbieter
+Use fal.ai, Scenario or ElevenLabs for generated assets.	Nutze fal.ai, Scenario oder ElevenLabs für generierte Assets.
+Generate original pictures and models, speech, sound effects and music with your own provider accounts. Estimated visual costs: {model} a model and {picture} a picture. Each project has a {budget} budget. Keys use the system keychain when available, otherwise a private local key file. Choose picture and 3D providers in Settings → Builds.	Erzeuge originale Bilder und Modelle, Sprache, Soundeffekte und Musik über deine eigenen Anbieterkonten. Geschätzte Kosten für Grafik: {model} pro Modell und {picture} pro Bild. Jedes Projekt hat ein Budget von {budget}. Schlüssel liegen im System-Schlüsselbund, wenn verfügbar, sonst in einer privaten lokalen Schlüsseldatei. Wähle Bild- und 3D-Anbieter unter Einstellungen → Builds.
+Pictures and 3D models from fal.ai or Scenario; speech, sound effects and music from ElevenLabs. Estimated {model} per model, with a {budget} budget per project. Choose visual models in Settings → Builds.	Bilder und 3D-Modelle von fal.ai oder Scenario; Sprache, Soundeffekte und Musik von ElevenLabs. Geschätzt {model} pro Modell, mit einem Budget von {budget} pro Projekt. Wähle die Grafikmodelle unter Einstellungen → Builds.
+3D model generator	3D-Modell-Generator
+What pictures are turned into 3D models with.	Womit Bilder in 3D-Modelle verwandelt werden.
+What a new project may spend on generated pictures, 3D models and audio before you're asked. Each project keeps its own.	Was ein neues Projekt für generierte Bilder, 3D-Modelle und Audio ausgeben darf, bevor du gefragt wirst. Jedes Projekt behält sein eigenes.
+API secret	API-Secret
+{name} API secret	{name}-API-Secret
+Paste your {name} API secret	Füge dein {name}-API-Secret ein
+Save asset settings	Asset-Einstellungen speichern
+Key needed	Schlüssel nötig
+Off. Turning this on uses the providers chosen below.	Aus. Eingeschaltet werden die unten gewählten Anbieter verwendet.
+Manage provider keys	Anbieterschlüssel verwalten
+Assets: {n} · estimated spent ${spent}	Assets: {n} · geschätzt ausgegeben ${spent}
+Budget ${budget} · remaining ${remaining}	Budget ${budget} · übrig ${remaining}
+Shared asset budget (USD)	Gemeinsames Asset-Budget (USD)
+Asset budget in USD	Asset-Budget in USD
+Save budget	Budget speichern
+Saving asset settings…	Asset-Einstellungen werden gespeichert…
+Enter an amount from 0 to {max} USD.	Gib einen Betrag von 0 bis {max} USD ein.
+Asset spending is unavailable. Repair assets.json before generating.	Asset-Ausgaben sind nicht verfügbar. Repariere assets.json vor dem Erzeugen.
