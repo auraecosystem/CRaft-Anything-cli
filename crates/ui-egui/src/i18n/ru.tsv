@@ -777,9 +777,9 @@ Open the folder	Открыть папку
 Open the installer app	Открыть приложение-установщик
 Open the website	Открыть веб-сайт
 Open {name}	Открыть {name}
-OpenCode default	По умолчанию для OpenCode
-OpenCode has no visible chat models. Connect a provider in OpenCode, then reload.	В OpenCode нет доступных моделей для чата. Подключите провайдера в OpenCode и обновите список.
-OpenCode model	Модель OpenCode
+{agent} default	По умолчанию для {agent}
+{agent} lists no chat models here. Set it up (sign in, or connect a provider), then reload.	{agent} не предлагает здесь моделей для чата. Настройте его (войдите или подключите провайдера) и обновите список.
+{agent} model	Модель {agent}
 Opened {name}	Открыто: {name}
 Opened {name}. Taking a first look…	Открыто: {name}. Делаем первый взгляд…
 Opened {}	Открыто: {}
@@ -1092,7 +1092,7 @@ The picture on the clipboard is too large.	Изображение в буфер�
 The program's machine code written out as one tiny instruction per line.	Машинный код программы, записанный в виде одной крошечной инструкции на строку.
 The project's name and round	Название проекта и раунд
 The raw result	Сырой результат
-The saved model is no longer visible. Choose another model or the OpenCode default.	Сохранённая модель больше не доступна. Выберите другую модель или модель OpenCode по умолчанию.
+The saved model is no longer visible. Choose another model or the {agent} default.	Сохранённая модель больше не доступна. Выберите другую модель или модель {agent} по умолчанию.
 The saved thinking depth is unavailable for this model. Choose its default or an offered depth.	Сохранённая глубина размышления недоступна для этой модели. Выберите значение по умолчанию или одно из предложенных.
 The smallest unit of data in a file: a number from 0 to 255.	Наименьшая единица данных в файле: число от 0 до 255.
 The smallest units of data in a file: numbers from 0 to 255.	Наименьшие единицы данных в файле: числа от 0 до 255.
