@@ -400,6 +400,9 @@ pub struct CraftApp {
     pub preview: Option<String>,
     /// Questions asked about each project's build this session, and their answers (`just_ask`).
     pub asked: std::collections::HashMap<PathBuf, Vec<just_ask::Asked>>,
+    /// The builder's open questions answered from the side panel, by project, so each shows as
+    /// sent until the project is read again after the run that had the answer.
+    pub answered: std::collections::HashMap<PathBuf, Vec<project::SentAnswer>>,
     /// Every project's pinned builds, and whether they're running (read by `refresh_pins`).
     pub pins: Vec<pins::PinRow>,
     pub pins_read_at: Option<Instant>,
@@ -492,6 +495,7 @@ impl CraftApp {
             preview: None,
             pins: Vec::new(),
             asked: Default::default(),
+            answered: Default::default(),
             pins_read_at: None,
             open_url: None,
             thumbs: Default::default(),
@@ -1403,7 +1407,9 @@ impl CraftApp {
             Done::Pictures(files) => self.add_pictures(files),
             Done::ToAttach(files) => self.attach(files),
             Done::Pasted { project, files } => self.pasted(project, files),
-            Done::Attached { root, text, attachments, files } => self.deliver(root, text, attachments, files),
+            Done::Attached { root, text, attachments, files } => {
+                self.deliver(root, text, attachments, files);
+            }
             Done::GameEngines(inv) => self.engines_found(inv),
             Done::GameFound { path, found } => {
                 // Only if that game is still the one picked.
