@@ -469,6 +469,8 @@ Gaps found while using the app for real projects.
 - [x] Ctrl+V (Shift+Insert, Cmd+V) in a prompt box that takes pictures pastes a copied image (saved
       as a PNG) or copied picture files; attachments show as square picture tiles, the whole
       picture on hover, decoded on a worker
+- [x] One paste at a time (another Ctrl+V meanwhile says so), and Make's Start pressed while a
+      picture is still being pasted starts once it's in, as a project's Send does
 - [ ] A picture over 20 MB dropped on a prompt box or picked in its dialog still shows as
       attached, and the message then goes without it (`copy_pictures` skips it); refuse it when
       it's added, as a paste does (`workspace::attachable_picture`)
