@@ -643,12 +643,14 @@ impl Worker {
                 self.extract(ws, kind, &name, ex)?;
             }
         }
-        // A coding agent resumes its own session; our loop resumes its kept transcript.
-        let resumable = api.as_ref().is_none_or(crate::agent::ApiConversation::resumed);
         let api_loop = api.is_some();
         // A session another coding agent saved can't be continued by this one (#469).
         if !api_loop && ws.manifest.agent_session_by.as_deref() != Some(entry.config.model.as_str()) {
-            ws.manifest.agent_session = ws.manifest.agent_session_for(&entry.config.model).map(str::to_string);
+            let kept = ws.manifest.agent_session_for(&entry.config.model).map(str::to_string);
+            if kept != ws.manifest.agent_session {
+                ws.manifest.agent_session_whole = None;
+            }
+            ws.manifest.agent_session = kept;
             ws.manifest.agent_session_by = Some(entry.config.model.clone());
             ws.save()?;
         }
@@ -657,10 +659,20 @@ impl Worker {
         if let Some(a) = &keeper {
             self.restore_session(ws, a.as_ref());
         }
-        // A coding agent that never saved a session starts over, so it needs the brief.
-        let has_history = resumable && (api_loop || ws.manifest.agent_session.is_some());
         self.step(ws, Step::Build, Status::Building, "Getting the builder ready…")?;
-        let spec = self.agent_spec(ws, &entry, opts);
+        let mut spec = self.agent_spec(ws, &entry, opts);
+        let has_history = has_history(api.as_ref(), &spec, ws);
+        // A saved session that isn't history (it doesn't hold the brief, or the builder doesn't
+        // continue it) isn't continued: a new one starts from the whole brief and is kept instead.
+        if !api_loop && !has_history && ws.manifest.agent_session.is_some() {
+            ws.manifest.agent_session = None;
+            ws.manifest.agent_session_whole = None;
+            spec.resume = None;
+            ws.save()?;
+        }
+        // Every session this run saves holds the whole conversation when the builder continues it:
+        // it is the one that had it already, or one this run started from the whole brief.
+        let whole = !api_loop && crate::cli_agents::continues_conversation(&spec);
         let mut agent: Box<dyn Conversation> = match api {
             Some(a) => Box::new(a),
             None => crate::cli_agents::builder_conversation(spec, self.approver(ws)),
@@ -671,29 +683,15 @@ impl Worker {
         let image_model = s.settings.assets.image_model.clone();
         drop(s);
         let cx = BriefCx { ws, deep, ghidra, editor: self.editor.as_deref(), assets: self.assets, image_model: image_model.as_deref() };
-        // The project's settings as they are now, for an agent that carries on its session.
-        let now = || kind.follow_up_sections(&cx).iter().map(|s| format!("\n\n{s}")).collect::<String>() + &pictures_reminder(ws);
-        let mut prompt = match &opts.message {
-            // An agent with a saved session gets the follow-up; one without (an API loop) starts
-            // from the brief with the request added.
-            Some(m) if !first && has_history => follow_up(m, kind) + &now(),
-            // Carrying on after a stop: the same, told to finish what it was doing.
-            None if carrying_on && !first && has_history => continue_prompt(kind) + &now(),
-            _ => {
-                let b = brief(kind, &cx, opts.message.as_deref());
-                if api_loop { format!("{API_BUILDER}\n\n{b}") } else { b }
-            }
-        };
+        // A saved session may not be on this computer (the project was copied here): then a new
+        // one starts from the brief and what the project already has (`fresh`).
+        let handoff = keeper.as_ref().and_then(|a| a.handoff(&kept_session(ws)?, HANDOFF_CHARS));
+        let how = Opening { message: opts.message.as_deref(), first, carrying_on, api_loop, has_history, handoff: handoff.as_deref() };
+        let (mut prompt, mut fresh) = opening(kind, &cx, &how);
         // The extraction step left the original's files in app/Original/: the builder starts from them.
         if first && ws.app_dir().join(ORIGINALS_MANIFEST).is_file() {
             prompt.push_str(ORIGINALS_READY);
         }
-        // A saved session may not be on this computer (the project was copied here): then a new
-        // one starts from the brief and what the project already has.
-        let mut fresh = (!api_loop && ws.manifest.agent_session.is_some()).then(|| {
-            let handoff = keeper.as_ref().and_then(|a| a.handoff(&kept_session(ws)?, HANDOFF_CHARS));
-            resumed_elsewhere(&brief(kind, &cx, opts.message.as_deref()), &ws.manifest.last_reply, handoff.as_deref())
-        });
         let mut round = ws.manifest.checks.iter().map(|c| c.round).max().unwrap_or(0);
         let mut refinements = 0;
         // Deep mode on a program: decompiling is required, so a build turn without any gets one reminder.
@@ -719,6 +717,10 @@ impl Worker {
                 self.step(ws, Step::Build, Status::Building, doing)?;
                 ws.manifest.awaiting_check = false;
                 let reply = self.turn(ws, agent.as_mut(), &prompt, fresh.take());
+                if !api_loop && ws.manifest.agent_session.is_some() && ws.manifest.agent_session_whole != Some(whole) {
+                    ws.manifest.agent_session_whole = Some(whole);
+                    ws.save()?;
+                }
                 // Kept even when the turn failed: the conversation is still worth carrying.
                 if let Some(a) = &keeper {
                     self.keep_session(ws, a.as_ref());
@@ -982,6 +984,7 @@ impl Worker {
             if lost {
                 // The id is for a session this computer doesn't have: never ask for it again.
                 ws.manifest.agent_session = None;
+                ws.manifest.agent_session_whole = None;
                 ws.save()?;
             } else if let Some(id) = agent.session_id() {
                 ws.manifest.agent_session = Some(id);
@@ -1123,6 +1126,23 @@ impl Worker {
 fn no_build_progress(ws: &Workspace) -> ToolError {
     ToolError::new(ErrorCode::OverLimit, format!("The build stopped after two builder turns changed no files in {}.", ws.app_place()))
         .with_remediation("Send a new request with a concrete correction, or edit the app's files before trying again.")
+}
+
+/// Whether the builder has the conversation that built the project so far, so a later message
+/// needs only what's new: our loop when it resumed its kept transcript, a coding agent when it
+/// saved a session that holds the whole conversation and continues it from one run to the next
+/// (`spec`). A saved id alone isn't enough: Codex saved one it never continued, and every
+/// follow-up reached a new session that knew nothing of the brief; a project from then keeps
+/// such a thread, unmarked (`Manifest::agent_session_whole`).
+fn has_history(api: Option<&crate::agent::ApiConversation>, spec: &CliSpec, ws: &Workspace) -> bool {
+    let m = &ws.manifest;
+    match api {
+        Some(a) => a.resumed(),
+        None => {
+            let whole = m.agent_session_whole.unwrap_or_else(|| spec.adapters.for_agent(&spec.config.model).unmarked_session_is_whole());
+            m.agent_session.is_some() && whole && crate::cli_agents::continues_conversation(spec)
+        }
+    }
 }
 
 /// Largest builder session the project keeps a copy of.
