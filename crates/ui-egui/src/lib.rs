@@ -386,7 +386,7 @@ pub struct CraftApp {
     /// What was typed for each note still waiting for a builder, by note id, to put back in the
     /// prompt box when the note is taken back.
     pub drafts: std::collections::HashMap<u64, project::Draft>,
-    /// A picture still being pasted into the open project's prompt box (`paste_pictures`).
+    /// A picture still being pasted, into a project's prompt box or Make's pictures (`paste_pictures`).
     pub pending_paste: Option<project::PendingPaste>,
     /// Each project's building time and AI use, every build together (read from its usage.json).
     pub usage: std::collections::HashMap<PathBuf, usage::ProjectClock>,
